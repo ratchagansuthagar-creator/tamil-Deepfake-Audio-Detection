@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Urdu Deepfake Audio Detector</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#08111f;
+    color:white;
+}
+
+header{
+    background:#101d33;
+    padding:25px;
+    text-align:center;
+    border-bottom:1px solid #29405f;
+}
+
+header h1{
+    margin:0;
+    color:#4dd8ff;
+    font-size:30px;
+}
+
+header p{
+    color:#b8c7dc;
+}
+
+.container{
+    width:92%;
+    max-width:1100px;
+    margin:30px auto;
+}
+
+.card{
+    background:#111e34;
+    border:1px solid #293b5b;
+    border-radius:16px;
+    padding:25px;
+    margin-bottom:20px;
+}
+
+h2{
+    color:#4dd8ff;
+}
+
+.upload-box{
+    text-align:center;
+    border:2px dashed #3c5578;
+    padding:35px;
+    border-radius:15px;
+}
+
+input[type="file"]{
+    margin:20px;
+    padding:12px;
+}
+
+audio{
+    width:100%;
+    margin-top:15px;
+}
+
+button{
+    background:#087cf5;
+    border:none;
+    color:white;
+    padding:13px 25px;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#075fc0;
+}
+
+button:disabled{
+    background:#555;
+    cursor:not-allowed;
+}
+
+.steps{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+}
+
+.step{
+    background:#0b1628;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.step.active{
+    border:1px solid #4dd8ff;
+    color:#4dd8ff;
+}
+
+.step.done{
+    border:1px solid #57f59a;
+    color:#57f59a;
+}
+
+.result{
+    text-align:center;
+}
+
+.result-box{
+    padding:30px;
+    border-radius:12px;
+    background:#0b1628;
+    margin-top:20px;
+}
+
+#result{
+    font-size:28px;
+    font-weight:bold;
+}
+
+#confidence{
+    font-size:22px;
+    color:#4dd8ff;
+}
+
+.progress{
+    height:18px;
+    background:#293b59;
+    border-radius:10px;
+    overflow:hidden;
+    margin:20px 0;
+}
+
+#bar{
+    height:100%;
+    width:0%;
+    background:#4dd8ff;
+    transition:0.5s;
+}
+
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.feature{
+    background:#0b1628;
+    padding:18px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.feature strong{
+    display:block;
+    font-size:20px;
+    color:#4dd8ff;
+    margin-bottom:5px;
+}
+
+.warning{
+    color:#ffd166;
+    background:#302715;
+    padding:15px;
+    border-radius:10px;
+    margin-top:20px;
+}
+
+.info{
+    background:#0b1628;
+    padding:20px;
+    border-radius:10px;
+    line-height:1.8;
+}
+
+@media(max-width:700px){
+
+    .steps,
+    .feature-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+<header>
+
+<h1>🎙️ Urdu Deepfake Audio Detector</h1>
+
+<p>
+Deepfake Audio Detection in Low-Resource Languages:
+A Case Study of Urdu
+</p>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- STEP 1 -->
+
+<div class="card">
+
+<h2>1️⃣ Upload Urdu Audio</h2>
+
+<div class="upload-box">
+
+<p>
+Upload an Urdu voice recording for analysis.
+</p>
+
+<input
+type="file"
+id="audioFile"
+accept="audio/*"
+>
+
+<audio
+id="audioPlayer"
+controls>
+</audio>
+
+<p id="fileName">
+No audio selected
+</p>
+
+</div>
+
+</div>
+
+
+
+<!-- STEP 2 -->
+
+<div class="card">
+
+<h2>2️⃣ Audio Detection Process</h2>
+
+<div class="steps">
+
+<div class="step" id="step1">
+
+🎧
+
+<br>
+
+Audio
+
+<br>
+
+Preprocessing
+
+</div>
+
+
+<div class="step" id="step2">
+
+📊
+
+<br>
+
+MFCC / LFCC
+
+<br>
+
+Extraction
+
+</div>
+
+
+<div class="step" id="step3">
+
+🤖
+
+<br>
+
+AI Model
+
+<br>
+
+Analysis
+
+</div>
+
+
+<div class="step" id="step4">
+
+🔍
+
+<br>
+
+Result
+
+<br>
+
+Generation
+
+</div>
+
+</div>
+
+<br>
+
+<button
+id="analyzeButton"
+onclick="analyzeAudio()"
+disabled>
+
+🧠 Analyze Audio
+
+</button>
+
+</div>
+
+
+
+<!-- STEP 3 -->
+
+<div class="card result">
+
+<h2>3️⃣ Detection Result</h2>
+
+<div class="result-box">
+
+<div id="result">
+
+Waiting for audio...
+
+</div>
+
+<p id="confidence">
+
+Confidence: —
+
+</p>
+
+<div class="progress">
+
+<div id="bar"></div>
+
+</div>
+
+<p id="message">
+
+Upload an audio file and click
+Analyze Audio.
+
+</p>
+
+</div>
+
+</div>
+
+
+
+<!-- STEP 4 -->
+
+<div class="card">
+
+<h2>4️⃣ Audio Feature Analysis</h2>
+
+<div class="feature-grid">
+
+
+<div class="feature">
+
+<strong id="mfcc">
+—
+</strong>
+
+MFCC Frames
+
+</div>
+
+
+<div class="feature">
+
+<strong id="lfcc">
+—
+</strong>
+
+LFCC Features
+
+</div>
+
+
+<div class="feature">
+
+<strong id="pitch">
+—
+</strong>
+
+Pitch Variation
+
+</div>
+
+
+<div class="feature">
+
+<strong id="energy">
+—
+</strong>
+
+Energy Level
+
+</div>
+
+
+</div>
+
+</div>
+
+
+
+<!-- STEP 5 -->
+
+<div class="card">
+
+<h2>5️⃣ Analysis Information</h2>
+
+<div class="info">
+
+<p>
+🎙️ <b>Audio Input:</b>
+Urdu voice recording
+</p>
+
+<p>
+🔊 <b>Preprocessing:</b>
+Audio is prepared for feature extraction.
+</p>
+
+<p>
+📊 <b>Feature Extraction:</b>
+MFCC / LFCC audio features are analysed.
+</p>
+
+<p>
+🤖 <b>AI Detection:</b>
+The system evaluates speech characteristics.
+</p>
+
+<p>
+📈 <b>Final Output:</b>
+Real or possible AI-generated audio.
+</p>
+
+</div>
+
+</div>
+
+
+
+<!-- WARNING -->
+
+<div class="card">
+
+<h2>⚠️ Project Note</h2>
+
+<div class="warning">
+
+This website is a demonstration prototype.
+
+The current website does NOT contain a trained
+deepfake detection AI model.
+
+The displayed result is simulated for demonstration.
+
+For a real engineering system, a trained machine
+learning model must be connected through a Python
+backend.
+
+</div>
+
+</div>
+
+
+
+<!-- COMPLETE FLOW -->
+
+<div class="card">
+
+<h2>🔄 Complete System Flow</h2>
+
+<p style="text-align:center;font-size:18px">
+
+🎙️ Urdu Audio
+
+↓
+
+🎧 Preprocessing
+
+↓
+
+📊 MFCC / LFCC
+
+↓
+
+🤖 AI Model
+
+↓
+
+📈 Confidence
+
+↓
+
+🚨 AI-Generated
+
+OR
+
+✅ Real Audio
+
+</p>
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+
+const audioFile =
+document.getElementById("audioFile");
+
+
+const audioPlayer =
+document.getElementById("audioPlayer");
+
+
+const analyzeButton =
+document.getElementById("analyzeButton");
+
+
+const fileName =
+document.getElementById("fileName");
+
+
+
+/* AUDIO UPLOAD */
+
+audioFile.addEventListener(
+"change",
+function(){
+
+const file=this.files[0];
+
+if(!file){
+
+return;
+
+}
+
+
+fileName.innerText=
+"Selected: "+file.name;
+
+
+audioPlayer.src=
+URL.createObjectURL(file);
+
+
+analyzeButton.disabled=false;
+
+});
+
+
+
+/* ANALYSIS */
+
+function analyzeAudio(){
+
+analyzeButton.disabled=true;
+
+
+document.getElementById("result")
+.innerText=
+"🔄 ANALYZING...";
+
+
+document.getElementById("message")
+.innerText=
+"Processing Urdu audio...";
+
+
+/* Step 1 */
+
+document.getElementById("step1")
+.classList.add("active");
+
+
+setTimeout(function(){
+
+document.getElementById("step1")
+.classList.remove("active");
+
+document.getElementById("step1")
+.classList.add("done");
+
+
+document.getElementById("step2")
+.classList.add("active");
+
+},700);
+
+
+
+/* Step 2 */
+
+setTimeout(function(){
+
+document.getElementById("step2")
+.classList.remove("active");
+
+document.getElementById("step2")
+.classList.add("done");
+
+
+document.getElementById("step3")
+.classList.add("active");
+
+
+document.getElementById("mfcc")
+.innerText="120";
+
+
+document.getElementById("lfcc")
+.innerText="80";
+
+},1400);
+
+
+
+/* Step 3 */
+
+setTimeout(function(){
+
+document.getElementById("step3")
+.classList.remove("active");
+
+document.getElementById("step3")
+.classList.add("done");
+
+
+document.getElementById("step4")
+.classList.add("active");
+
+
+document.getElementById("pitch")
+.innerText="0.42";
+
+
+document.getElementById("energy")
+.innerText="0.68";
+
+},2100);
+
+
+
+/* FINAL RESULT */
+
+setTimeout(function(){
+
+document.getElementById("step4")
+.classList.remove("active");
+
+document.getElementById("step4")
+.classList.add("done");
+
+
+const fakeProbability =
+Math.floor(Math.random()*30)+65;
+
+
+document.getElementById("result")
+.innerText=
+"🚨 POSSIBLE AI-GENERATED AUDIO";
+
+
+document.getElementById("confidence")
+.innerText=
+"Confidence: "+
+fakeProbability+
+"%";
+
+
+document.getElementById("bar")
+.style.width=
+fakeProbability+"%";
+
+
+document.getElementById("message")
+.innerText=
+"Synthetic speech patterns may be present.";
+
+
+analyzeButton.disabled=false;
+
+},3000);
+
+}
+
+</script>
+
+
+</body>
+
+</html>
